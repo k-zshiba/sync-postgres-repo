@@ -1,0 +1,31 @@
+name: Sync PostgreSQL fork
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+    concurrency:
+      group: sync-postgres-fork
+      cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
+      FORK_REPO: ${{ vars.FORK_REPO }}
+    
+    steps:
+      - name: Variable configuration
+        shell: bash
+        run: |
+          : "${FORK_REPO:?Repository variable FORK_REPO is not set}"
+
+      - name: Sync fork
+        shell: bash
+        run: |
+          gh repo sync "$FORK_REPO" \
+            --source postgres/postgres \
+            --branch master
